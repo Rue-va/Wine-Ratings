@@ -1,0 +1,227 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wine Rating App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"></link>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-gray-100 font-roboto">
+    <div class="container mx-auto p-4">
+        <h1 class="text-3xl font-bold text-center mb-8">Wine Rating App</h1>
+        
+        <div class="bg-white p-6 rounded-lg shadow-lg mb-8">
+            <h2 class="text-2xl font-bold mb-4">Upload a Wine</h2>
+            <form id="uploadForm" class="space-y-4">
+                <div>
+                    <label for="wineName" class="block text-sm font-medium text-gray-700">Wine Name</label>
+                    <input type="text" id="wineName" name="wineName" class="mt-1 block w-full p-2 border border-gray-300 rounded-md" required>
+                </div>
+                <div>
+                    <label for="wineImage" class="block text-sm font-medium text-gray-700">Wine Image</label>
+                    <input type="file" id="wineImage" name="wineImage" class="mt-1 block w-full p-2 border border-gray-300 rounded-md" accept="image/*" required>
+                </div>
+                <button type="submit" class="w-full bg-blue-500 text-white p-2 rounded-md">Upload Wine</button>
+            </form>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow-lg">
+            <h2 class="text-2xl font-bold mb-4">Rate Wines</h2>
+            <div id="wineList" class="space-y-4">
+                <!-- Wine items will be dynamically added here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            loadWines();
+        });
+
+        document.getElementById('uploadForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const wineName = document.getElementById('wineName').value;
+            const wineImage = document.getElementById('wineImage').files[0];
+            
+            if (wineName && wineImage) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const wine = {
+                        id: Date.now(),
+                        name: wineName,
+                        image: e.target.result,
+                        ratings: []
+                    };
+                    saveWine(wine);
+                    addWineToDOM(wine);
+                };
+                reader.readAsDataURL(wineImage);
+            }
+        });
+
+        function saveWine(wine) {
+            const wines = JSON.parse(localStorage.getItem('wines')) || [];
+            wines.push(wine);
+            localStorage.setItem('wines', JSON.stringify(wines));
+        }
+
+        function loadWines() {
+            const wines = JSON.parse(localStorage.getItem('wines')) || [];
+            wines.forEach(wine => addWineToDOM(wine));
+        }
+
+        function addWineToDOM(wine) {
+            const wineList = document.getElementById('wineList');
+            const wineItem = document.createElement('div');
+            wineItem.className = 'p-4 border border-gray-300 rounded-md flex items-center space-x-4';
+            wineItem.dataset.id = wine.id;
+            
+            const img = document.createElement('img');
+            img.src = wine.image;
+            img.alt = `Image of ${wine.name}`;
+            img.className = 'w-24 h-24 object-cover rounded-md';
+            
+            const details = document.createElement('div');
+            details.className = 'flex-1';
+            
+            const name = document.createElement('h3');
+            name.className = 'text-xl font-bold';
+            name.textContent = wine.name;
+            
+            const ratingForm = document.createElement('form');
+            ratingForm.className = 'mt-2 space-y-2';
+            ratingForm.innerHTML = `
+                <div>
+                    <label for="userName" class="block text-sm font-medium text-gray-700">Your Name</label>
+                    <input type="text" id="userName" name="userName" class="mt-1 block w-full p-2 border border-gray-300 rounded-md" required>
+                </div>
+                <div>
+                    <label for="taste" class="block text-sm font-medium text-gray-700">Taste (/10)</label>
+                    <input type="number" id="taste" name="taste" min="1" max="10" class="mt-1 block w-full p-2 border border-gray-300 rounded-md" required>
+                </div>
+                <div>
+                    <label for="appearance" class="block text-sm font-medium text-gray-700">Appearance (/10)</label>
+                    <input type="number" id="appearance" name="appearance" min="1" max="10" class="mt-1 block w-full p-2 border border-gray-300 rounded-md" required>
+                </div>
+                <div>
+                    <label for="aroma" class="block text-sm font-medium text-gray-700">Aroma (/10)</label>
+                    <input type="number" id="aroma" name="aroma" min="1" max="10" class="mt-1 block w-full p-2 border border-gray-300 rounded-md" required>
+                </div>
+                <div>
+                    <label for="body" class="block text-sm font-medium text-gray-700">Body (/10)</label>
+                    <input type="number" id="body" name="body" min="1" max="10" class="mt-1 block w-full p-2 border border-gray-300 rounded-md" required>
+                </div>
+                <div>
+                    <label for="finish" class="block text-sm font-medium text-gray-700">Finish (/10)</label>
+                    <input type="number" id="finish" name="finish" min="1" max="10" class="mt-1 block w-full p-2 border border-gray-300 rounded-md" required>
+                </div>
+                <button type="submit" class="mt-2 w-full bg-green-500 text-white p-2 rounded-md">Submit Rating</button>
+            `;
+            
+            ratingForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+                const userName = ratingForm.querySelector('input[name="userName"]').value;
+                const taste = ratingForm.querySelector('input[name="taste"]').value;
+                const appearance = ratingForm.querySelector('input[name="appearance"]').value;
+                const aroma = ratingForm.querySelector('input[name="aroma"]').value;
+                const body = ratingForm.querySelector('input[name="body"]').value;
+                const finish = ratingForm.querySelector('input[name="finish"]').value;
+                
+                const rating = {
+                    userName,
+                    taste,
+                    appearance,
+                    aroma,
+                    body,
+                    finish,
+                    overall: (parseInt(taste) + parseInt(appearance) + parseInt(aroma) + parseInt(body) + parseInt(finish)) / 5
+                };
+                
+                wine.ratings.push(rating);
+                saveWineList();
+                displayRatings(wine, details);
+                ratingForm.reset();
+            });
+            
+            const deleteButton = document.createElement('button');
+            deleteButton.className = 'ml-4 bg-red-500 text-white p-2 rounded-md';
+            deleteButton.textContent = 'Delete';
+            deleteButton.addEventListener('click', function() {
+                deleteWine(wine.id);
+                wineItem.remove();
+            });
+            
+            details.appendChild(name);
+            details.appendChild(ratingForm);
+            displayRatings(wine, details);
+            
+            wineItem.appendChild(img);
+            wineItem.appendChild(details);
+            wineItem.appendChild(deleteButton);
+            
+            wineList.appendChild(wineItem);
+        }
+
+        function displayRatings(wine, details) {
+            const existingRatings = details.querySelectorAll('.rating');
+            existingRatings.forEach(rating => rating.remove());
+            
+            const ratingsList = document.createElement('div');
+            ratingsList.className = 'ratings mt-4';
+            ratingsList.innerHTML = '<h4 class="text-lg font-bold">Ratings:</h4>';
+            
+            wine.ratings.forEach(rating => {
+                const ratingDiv = document.createElement('div');
+                ratingDiv.className = 'rating mt-2 text-sm text-gray-700';
+                ratingDiv.innerHTML = `
+                    <p><strong>${rating.userName}</strong> rated this wine:</p>
+                    <p>Taste: ${rating.taste}/10</p>
+                    <p>Appearance: ${rating.appearance}/10</p>
+                    <p>Aroma: ${rating.aroma}/10</p>
+                    <p>Body: ${rating.body}/10</p>
+                    <p>Finish: ${rating.finish}/10</p>
+                    <p>Overall Rating: ${rating.overall.toFixed(1)}/10</p>
+                `;
+                ratingsList.appendChild(ratingDiv);
+            });
+            
+            details.appendChild(ratingsList);
+        }
+
+        function saveWineList() {
+            const wineList = document.getElementById('wineList');
+            const wines = [];
+            wineList.querySelectorAll('.p-4').forEach(wineItem => {
+                const wine = {
+                    id: parseInt(wineItem.dataset.id),
+                    name: wineItem.querySelector('h3').textContent,
+                    image: wineItem.querySelector('img').src,
+                    ratings: []
+                };
+                wineItem.querySelectorAll('.rating').forEach(ratingDiv => {
+                    const rating = {
+                        userName: ratingDiv.querySelector('strong').textContent,
+                        taste: parseInt(ratingDiv.querySelector('p:nth-child(2)').textContent.split(': ')[1]),
+                        appearance: parseInt(ratingDiv.querySelector('p:nth-child(3)').textContent.split(': ')[1]),
+                        aroma: parseInt(ratingDiv.querySelector('p:nth-child(4)').textContent.split(': ')[1]),
+                        body: parseInt(ratingDiv.querySelector('p:nth-child(5)').textContent.split(': ')[1]),
+                        finish: parseInt(ratingDiv.querySelector('p:nth-child(6)').textContent.split(': ')[1]),
+                        overall: parseFloat(ratingDiv.querySelector('p:nth-child(7)').textContent.split(': ')[1])
+                    };
+                    wine.ratings.push(rating);
+                });
+                wines.push(wine);
+            });
+            localStorage.setItem('wines', JSON.stringify(wines));
+        }
+
+        function deleteWine(id) {
+            let wines = JSON.parse(localStorage.getItem('wines')) || [];
+            wines = wines.filter(wine => wine.id !== id);
+            localStorage.setItem('wines', JSON.stringify(wines));
+        }
+    </script>
+</body>
+</html>
